@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CMyDlg, CDialog)
 	ON_LBN_DBLCLK(IDC_LIST1, &CMyDlg::OnLbnDblclkList1)
 	ON_BN_CLICKED(IDC_BUTTON4, &CMyDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_CHECK1, &CMyDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_CHECK2, &CMyDlg::OnBnClickedCheck2)
 END_MESSAGE_MAP()
 
 
@@ -80,20 +81,21 @@ BOOL CMyDlg::OnInitDialog()
 	LoadiniToListCtrl();
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(BST_CHECKED);
 	Adminps=ini.GetValue("PS","Pass");
+	CString AutoStartValue= ini.GetValue("System", "AutoStart");
+	if (AutoStartValue=="1")
+	{
+		((CButton*)GetDlgItem(IDC_CHECK2))->SetCheck(BST_CHECKED);
+	}
+	else {
+		((CButton*)GetDlgItem(IDC_CHECK2))->SetCheck(BST_UNCHECKED);
+	}
 	synctimeing=false;
 	MainThis=this;
 	this->SetWindowText(_T("进程清理V1.13-更新时间:2017-09-04"));
 	INITPorcessStruct();//初始化进程结构体
 	InitNotify();//初始化图标
 	Shell_NotifyIcon(NIM_ADD, &NotifyIcon);
-	if (AutoStart())
-	{
-
-	}
-	else
-	{
-		AfxMessageBox(_T("注册表启动项写入失败,请使用管理员身份运行本程序"));
-	}
+	
 	Monitorprocess=::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)CheckProcess,(LPVOID)this,NULL,NULL);//启动一个线程
 	::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)CheckWindows,(LPVOID)this,NULL,NULL);//启动一个线程
 	Nsynctime();
@@ -468,7 +470,7 @@ void CMyDlg::InitNotify()
 	_tcscpy_s(NotifyIcon.szInfoTitle, _T("提示")); // 信息提示条为"进程清理"
 	_tcscpy_s(NotifyIcon.szTip, _T("进程清理")); // 信息提示条为"进程清理"
 	_tcscpy_s(NotifyIcon.szInfo, _T("进程清理托盘已启动,您可以右键点击托盘图标来操作哦!")); // 信息提示条为"进程清理"
-
+	
 
 
 }
@@ -584,7 +586,7 @@ void CMyDlg::OnNcPaint()
 		CDialog::OnNcPaint();
 }
 //写入系统注册表启动项
-bool AutoStart()
+bool AutoStart(bool DeleteKey)
 {
 
 	TCHAR StartupName[]=TEXT("CleanProcess");
@@ -601,17 +603,28 @@ bool AutoStart()
 		GetModuleFileName(NULL, pFileName, MAX_PATH);
 		//MyDebug(_T("%s"),pFileName);
 		//添加一个子Key,并设置值 StartupName=pFileName
-		lRet = RegSetValueEx(hKey, StartupName, 0, REG_SZ, (BYTE*)pFileName, (lstrlen(pFileName) + 1) * sizeof(TCHAR));
+		if (DeleteKey)
+		{
+			MyDebug("删除开机自启");
+			lRet = RegDeleteValue(hKey, StartupName);
+		}
+		else {
+			MyDebug("注册开机自启");
+			lRet = RegSetValueEx(hKey, StartupName, 0, REG_SZ, (BYTE*)pFileName, (lstrlen(pFileName) + 1) * sizeof(TCHAR));
+		}
+	
 		//关闭注册表
 		RegCloseKey(hKey);
 		if(lRet==ERROR_SUCCESS)
 		{
 			//注册表写入成功
+			MyDebug("注册表写入成功");
 			return true;
 		}
 		else
 		{
 			//注册表写入失败 
+			MyDebug("注册表写入失败");
 			return false;
 		}
 	}
@@ -1042,7 +1055,7 @@ void CheckWindows(CMyDlg* MydlgThis)
 
 
 }
-
+//点击监控选框
 void CMyDlg::OnBnClickedCheck1()
 {
 	if ( BST_CHECKED == IsDlgButtonChecked( IDC_CHECK1 ) )
@@ -1093,5 +1106,19 @@ void CMyDlg::Showmainwindow()
 		Inputadminps.ShowWindow(SW_SHOW);
 		Inputadminps.SetForegroundWindow();
 		Inputadminps.SetWindowText(_T("输入密码"));
+	}
+}
+//点击开机启动单选框
+void CMyDlg::OnBnClickedCheck2()
+{
+	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK2))//选中
+	{
+		AutoStart();
+		ini.SetValue("System", "Autostart", "1");
+	}
+	else//未选中
+	{
+		AutoStart(true);
+		ini.SetValue("System", "Autostart", "0");
 	}
 }

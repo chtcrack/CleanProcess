@@ -68,13 +68,14 @@ FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_INFOP,7,7,138,58,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
     PUSHBUTTON      "进程管理",IDC_BUTTON2,7,65,50,14
-    PUSHBUTTON      "清理垃圾",IDC_BUTTON1,200,65,50,14
+    PUSHBUTTON      "清理垃圾",IDC_BUTTON1,55,65,34,14
     EDITTEXT        IDC_EDIT1,182,7,40,14,ES_AUTOHSCROLL
     LTEXT           "添加关键字",IDC_STATIC,148,9,35,8
     LISTBOX         IDC_LIST1,147,23,56,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "添加",IDC_BUTTON3,223,7,27,14
-    PUSHBUTTON      "设置",IDC_BUTTON4,209,49,31,14
-    CONTROL         "监控",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,206,27,30,10
+    PUSHBUTTON      "设置",IDC_BUTTON4,88,65,31,14
+    CONTROL         "监控",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,206,27,24,10
+    CONTROL         "开机启动",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,206,38,43,10
 END
 
 IDD_ProcessDIALOG DIALOGEX 0, 0, 506, 294
@@ -250,7 +251,9 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    ".\\Release\\20131008053418320_easyicon_net_96.ico"
+
 IDI_ICON1               ICON                    ".\\Release\\20131008052850415_easyicon_net_96.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -296,11 +299,28 @@ END
 //
 
 IDB_BITMAP1             BITMAP                  "images\\bmp1.bmp"
+
 IDB_BITMAP2             BITMAP                  "images\\bmp2.bmp"
+
 IDB_BITMAP3             BITMAP                  "images\\bmp3.bmp"
+
 IDB_BITMAP4             BITMAP                  "images\\bmp4.bmp"
+
 IDB_BITMAP5             BITMAP                  "images\\bmp5.bmp"
+
 IDB_BITMAP6             BITMAP                  "images\\bmp6.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_MY_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 

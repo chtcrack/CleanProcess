@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by 进程清理.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 进程清理.rc 使用
 //
 #define IDD_MY_DIALOG                   102
 #define IDR_MAINFRAME                   160
@@ -47,6 +47,7 @@
 #define IDC_CHECK1                      1028
 #define IDC_INPUTPS                     1029
 #define IDC_SETPS                       1030
+#define IDC_CHECK2                      1031
 #define ID_32771                        32771
 #define ID__32772                       32772
 #define ID__32773                       32773
@@ -65,9 +66,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        180
+#define _APS_NEXT_RESOURCE_VALUE        181
 #define _APS_NEXT_COMMAND_VALUE         32787
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

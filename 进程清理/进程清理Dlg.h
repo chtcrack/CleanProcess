@@ -104,10 +104,11 @@ public:
 	afx_msg void OnLbnDblclkList1();
 	afx_msg void OnBnClickedButton4();
 	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnBnClickedCheck2();
 };
 	void CheckProcess(CMyDlg* MydlgThis);//检测进程
 	void INITPorcessStruct();//初始化进程结构体
-	bool AutoStart();//写入系统注册表启动项
+	bool AutoStart(bool DeleteKey=false);//写入系统注册表启动项
 	void CheckWindows(CMyDlg* MydlgThis);//检测窗口名
 	PROCESS_INFORMATION RunApp(CString runpath,CString exename,bool Showwindows=false);//运行指定程序,参数1路径,文件名及参数,是否显示窗口
 	void SyncTime(CMyDlg* MydlgThis);//同步时间函数用于多线程
