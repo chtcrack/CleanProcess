@@ -1,0 +1,40 @@
+﻿  stdafx.cpp
+X:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\atlmfc\include\afx.h(38): warning C4996: 'MBCS_Support_Deprecated_In_MFC': MBCS support in MFC is deprecated and may be removed in a future version of MFC.
+  X:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\atlmfc\include\afx.h(33): note: 参见“MBCS_Support_Deprecated_In_MFC”的声明
+stdafx.cpp(29): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\ucrt\string.h(343): note: 参见“strncpy”的声明
+  Addkeymonitor.cpp
+  CheckAdmin.cpp
+  ClearTmpFileDlg.cpp
+ClearTmpFileDlg.cpp(810): warning C4996: 'GetVersionExA': 被声明为已否决
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\sysinfoapi.h(436): note: 参见“GetVersionExA”的声明
+ClearTmpFileDlg.cpp(850): warning C4996: 'GetVersionExA': 被声明为已否决
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\sysinfoapi.h(436): note: 参见“GetVersionExA”的声明
+  HSListBox.cpp
+  Ini.cpp
+  ping.cpp
+ping.cpp(244): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(1830): note: 参见“inet_addr”的声明
+ping.cpp(250): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(2218): note: 参见“gethostbyname”的声明
+ping.cpp(358): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(1830): note: 参见“inet_addr”的声明
+ping.cpp(362): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(2218): note: 参见“gethostbyname”的声明
+ping.cpp(381): warning C4996: 'WSASocketA': Use WSASocketW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(3415): note: 参见“WSASocketA”的声明
+ping.cpp(577): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(1830): note: 参见“inet_addr”的声明
+ping.cpp(581): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\winsock2.h(2218): note: 参见“gethostbyname”的声明
+  PingDlg.cpp
+  ShowAllProcess.cpp
+  进程清理.cpp
+  进程清理Dlg.cpp
+进程清理Dlg.cpp(688): warning C4996: 'GetVersionExA': 被声明为已否决
+  X:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\um\sysinfoapi.h(436): note: 参见“GetVersionExA”的声明
+  正在生成代码
+  All 568 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  进程清理.vcxproj -> G:\Vc++ Source\Vs2017\进程清理2017\Release\进程清理.exe
+  进程清理.vcxproj -> G:\Vc++ Source\Vs2017\进程清理2017\Release\进程清理.pdb (Full PDB)

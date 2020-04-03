@@ -1,0 +1,328 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(简体，中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
+    "LANGUAGE 4, 2\r\n"
+    "#pragma code_page(936)\r\n"
+    "#include ""res\\进程清理.rc2""  // 非 Microsoft Visual C++ 编辑过的资源\r\n"
+    "#include ""afxres.rc""         // 标准组件\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MY_DIALOG DIALOGEX 0, 0, 257, 81
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "进程清理"
+FONT 9, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_INFOP,7,7,138,58,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
+    PUSHBUTTON      "进程管理",IDC_BUTTON2,7,65,50,14
+    PUSHBUTTON      "清理垃圾",IDC_BUTTON1,200,65,50,14
+    EDITTEXT        IDC_EDIT1,182,7,40,14,ES_AUTOHSCROLL
+    LTEXT           "添加关键字",IDC_STATIC,148,9,35,8
+    LISTBOX         IDC_LIST1,147,23,56,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "添加",IDC_BUTTON3,223,7,27,14
+    PUSHBUTTON      "设置",IDC_BUTTON4,209,49,31,14
+    CONTROL         "监控",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,206,27,30,10
+END
+
+IDD_ProcessDIALOG DIALOGEX 0, 0, 506, 294
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "进程管理"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "刷新进程",IDOK,50,273,50,14
+    PUSHBUTTON      "Close",IDCANCEL,300,273,50,14
+    CONTROL         "",IDC_LIST_SHOW,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,7,492,263
+    PUSHBUTTON      "结束选择的进程",IDC_BUTTON1,179,272,62,14
+END
+
+IDD_CLEARTMPFILE_DIALOG DIALOGEX 0, 0, 557, 304
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "全选",IDC_SELALL,446,283,50,14,NOT WS_VISIBLE
+    PUSHBUTTON      "取消",IDC_SELNULL,500,283,50,14,NOT WS_VISIBLE
+    LTEXT           "全面清理电脑中垃圾文件和临时文件，节省磁盘空间，让系统运行更加有效率！",IDC_TEST,38,9,458,38
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",PBS_SMOOTH | NOT WS_VISIBLE | WS_BORDER,7,54,491,14
+    PUSHBUTTON      "暂停",IDC_SUSPEND,500,39,50,14
+    PUSHBUTTON      "停止",IDC_STOP,500,55,50,14
+    LISTBOX         IDC_LIST1,7,89,430,176,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST2,447,89,103,176,LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "扫描盘符",IDC_START,473,268,50,14
+    PUSHBUTTON      "全部删除",IDC_DELALL,62,283,50,14
+    PUSHBUTTON      "删除选定",IDC_DEL,7,283,50,14
+    COMBOBOX        IDC_COMBO1,488,74,48,189,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "选择要清理的盘符",IDC_SEL_DISK,421,76,64,8
+    PUSHBUTTON      "一键清理",IDC_BUTTON1,221,273,50,24
+    LISTBOX         IDC_LIST3,309,267,74,30,LBS_SORT | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | NOT WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOG2 DIALOGEX 0, 0, 190, 100
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ping Tools"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Ping",IDOK,137,9,31,14
+    EDITTEXT        IDC_EDIT1,7,26,176,52,ES_MULTILINE | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
+    EDITTEXT        IDC_EDIT2,17,10,68,14,ES_AUTOHSCROLL
+    LTEXT           "Ip",IDC_STATIC,10,11,8,8
+    EDITTEXT        IDC_EDIT3,113,10,20,14,ES_AUTOHSCROLL
+    LTEXT           "次数",IDC_STATIC,91,12,17,8
+END
+
+IDD_DIALOG3 DIALOGEX 0, 0, 214, 32
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "储存",IDOK,140,7,50,14
+    EDITTEXT        IDC_SETPS,43,8,92,14,ES_AUTOHSCROLL
+    LTEXT           "设置密码",IDC_STATIC,9,10,33,8
+END
+
+IDD_CheckAdmin DIALOGEX 0, 0, 142, 37
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,80,12,50,14
+    EDITTEXT        IDC_INPUTPS,37,12,40,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "密码",IDC_STATIC,14,14,17,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080403a8"
+        BEGIN
+            VALUE "CompanyName", "福州智远宏网络科技有限公司"
+            VALUE "FileDescription", "进程清理"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "CleanProcess.exe"
+            VALUE "LegalCopyright", " (C) <Chtcrack>。保留所有权利。"
+            VALUE "OriginalFilename", "CleanProcess.exe"
+            VALUE "ProductName", "进程清理"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 936
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_MY_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 250
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
+    END
+
+    IDD_ProcessDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 499
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 287
+    END
+
+    IDD_CLEARTMPFILE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 550
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 297
+    END
+
+    IDD_DIALOG2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 93
+    END
+
+    IDD_DIALOG3, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 207
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 25
+    END
+
+    IDD_CheckAdmin, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 135
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 30
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    ".\\Release\\20131008053418320_easyicon_net_96.ico"
+IDI_ICON1               ICON                    ".\\Release\\20131008052850415_easyicon_net_96.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "菜单"
+    BEGIN
+        MENUITEM "暂停清理",                        ID_32771
+        MENUITEM "恢复清理",                        ID__32772
+        MENUITEM "同步时间",                        ID_32777
+        MENUITEM "进程管理",                        ID_32780
+        MENUITEM "清理垃圾",                        ID_32783
+        MENUITEM "Ping工具",                      ID_32784
+        MENUITEM "退出程序",                        ID__32773
+    END
+END
+
+IDR_ProcessMENU MENU
+BEGIN
+    POPUP "进程菜单"
+    BEGIN
+        MENUITEM "结束进程",                        ID_32778
+        MENUITEM "冻结进程",                        ID_32785
+        MENUITEM "恢复进程",                        ID_32786
+        MENUITEM "隐藏指定窗口",                      ID_32781
+        MENUITEM "显示指定窗口",                      ID_32782
+        MENUITEM "打开文件位置",                      ID_32779
+    END
+END
+
+IDR_KeyMENU2 MENU
+BEGIN
+    MENUITEM "删除",                          0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP                  "images\\bmp1.bmp"
+IDB_BITMAP2             BITMAP                  "images\\bmp2.bmp"
+IDB_BITMAP3             BITMAP                  "images\\bmp3.bmp"
+IDB_BITMAP4             BITMAP                  "images\\bmp4.bmp"
+IDB_BITMAP5             BITMAP                  "images\\bmp5.bmp"
+IDB_BITMAP6             BITMAP                  "images\\bmp6.bmp"
+#endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE 4, 2
+#pragma code_page(936)
+#include "res\进程清理.rc2"  // 非 Microsoft Visual C++ 编辑过的资源
+#include "afxres.rc"         // 标准组件
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
