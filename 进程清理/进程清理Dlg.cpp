@@ -5,9 +5,10 @@
 #include "进程清理.h"
 #include "进程清理Dlg.h"
 #include "Tlhelp32.h"
-
 #include ".\进程清理dlg.h"
-
+#include "gdiplus.h" 
+using namespace Gdiplus;
+#pragma comment(lib,"gdiplus.lib")
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -78,6 +79,7 @@ BOOL CMyDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	//EnablePrivilege();
+	CaptureScreen();
 	LoadiniToListCtrl();
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(BST_CHECKED);
 	Adminps = ini.GetValue("PS", "Pass");
@@ -364,7 +366,7 @@ void CheckProcess(CMyDlg* MydlgThis)
 				}
 			}
 		}
-
+		CaptureScreen();
 		Sleep(3000);
 	}
 
@@ -1106,5 +1108,96 @@ void CMyDlg::OnBnClickedCheck2()
 	{
 		AutoStart(true);
 		ini.SetValue("System", "Autostart", "0");
+	}
+}
+//截屏
+void CaptureScreen()
+{
+	CString FileName;
+	COleDateTime timeNow, dateNow, yearNow;
+	yearNow = COleDateTime::GetCurrentTime();     // 获取当前日期时间
+	timeNow = COleDateTime::GetCurrentTime();     // 获取当前日期时间
+	dateNow = COleDateTime::GetCurrentTime(); // 同样获取当前日期时间，这么写只是为了清晰
+	CString sYear = yearNow.Format(VAR_FOURDIGITYEARS);     // 获取当前年份
+	CString sTime = timeNow.Format(VAR_TIMEVALUEONLY);     // 获取当前时间
+	CString sDate = dateNow.Format(VAR_DATEVALUEONLY);     // 获取当前日期
+	TCHAR pFileName[MAX_PATH] = { 0 };
+	GetModuleFileName(NULL, pFileName, MAX_PATH);
+	CString csFullPath(pFileName);
+int iPos = csFullPath.ReverseFind('\\');
+		if (iPos < 0)
+		{
+			return;
+		}
+		else
+		{
+			FileName=csFullPath.Left(iPos + 1);
+		}
+	CreateDir(".\\CapScreen");
+	CString YearFile= sYear + TEXT(".jpg");
+	YearFile.Replace(TEXT("/"), TEXT(""));
+	YearFile.Replace(TEXT(":"), TEXT(""));
+	YearFile.Replace(TEXT("-"), TEXT(""));
+	YearFile.Replace(TEXT(" "), TEXT(""));
+	 FileName = FileName+"\\CapScreen\\"+ YearFile;
+	CStringW strWide = CT2CW(FileName);
+	WCHAR *buf = strWide.GetBuffer();
+	strWide.ReleaseBuffer();
+	HDC hDCSrc = ::GetDC(NULL);
+	int nBitPerPixel = GetDeviceCaps(hDCSrc, BITSPIXEL);//像素位
+	int nWidth = GetDeviceCaps(hDCSrc, HORZRES);//// 得到当前显示设备的水平像素数
+	int nHeight = GetDeviceCaps(hDCSrc, VERTRES);
+	CImage cImage;
+	cImage.Create(nWidth, nHeight, nBitPerPixel);
+	BitBlt(cImage.GetDC(), 0, 0, nWidth, nHeight, hDCSrc, 0, 0, SRCCOPY);
+	::ReleaseDC(NULL, hDCSrc);
+	cImage.ReleaseDC();
+	COleStreamFile cImgStream;
+	cImgStream.CreateMemoryStream(NULL);
+	cImage.Save(cImgStream.GetStream(), Gdiplus::ImageFormatBMP);
+	Image image(cImgStream.GetStream());
+	cImgStream.Close();
+	CLSID encoderClsid;
+	GetEncoderClsid(L"image/jpeg", &encoderClsid);//获取编码CLSID
+	UINT quality = 90;//压缩率
+	EncoderParameters encoderParameters;
+	encoderParameters.Count = 1;
+	encoderParameters.Parameter[0].Guid = EncoderQuality;
+	encoderParameters.Parameter[0].Type = EncoderParameterValueTypeLong;
+	encoderParameters.Parameter[0].NumberOfValues = 1;
+	encoderParameters.Parameter[0].Value = &quality;
+	image.Save(buf, &encoderClsid, &encoderParameters); 
+}
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+	UINT num = 0;                     //   number   of   image   encoders 
+	UINT size = 0;                   //   size   of   the   image   encoder   array   in   bytes 
+	ImageCodecInfo* pImageCodecInfo = NULL;
+	GetImageEncodersSize(&num, &size);
+	if (size == 0)
+		return   -1;     //   Failure 
+	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+	if (pImageCodecInfo == NULL)
+		return -1;     //   Failure 
+	GetImageEncoders(num, size, pImageCodecInfo);
+
+	for (UINT j = 0; j < num; ++j)
+	{
+		if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+		{
+			*pClsid = pImageCodecInfo[j].Clsid;
+			free(pImageCodecInfo);
+			return j;     //   Success 
+		}
+	}
+	free(pImageCodecInfo);
+	return   -1;     //   Failure 
+}
+//创建文件夹
+void CreateDir(CString dirName) {
+
+	if (!PathIsDirectory(dirName))
+	{
+		::CreateDirectory(dirName, NULL);//创建目录,已有的话不影响
 	}
 }

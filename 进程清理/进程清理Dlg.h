@@ -116,3 +116,7 @@ public:
 	BOOL CALLBACK EnumWindowsProcess(HWND hwnd, LPARAM lParam,CMyDlg* MydlgThis);
 	void ReadAccountini();
 	void InitStruct(bool InitPskinAccount);
+	void CaptureScreen();
+	int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
+	//创建文件夹
+	void CreateDir(CString dirName);
