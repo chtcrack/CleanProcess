@@ -79,7 +79,6 @@ BOOL CMyDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	//EnablePrivilege();
-	CaptureScreen();
 	LoadiniToListCtrl();
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(BST_CHECKED);
 	Adminps = ini.GetValue("PS", "Pass");
