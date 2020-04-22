@@ -1,6 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "进程清理", "进程清理\进程清理.vcxproj", "{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Monitor", "Monitor\Monitor.vcxproj", "{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,8 +24,8 @@ Global
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Debug|x64.Build.0 = Debug|x64
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Release|Win32.ActiveCfg = Release|Win32
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Release|Win32.Build.0 = Release|Win32
-		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Release|x64.ActiveCfg = Release|Win32
-		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Release|x64.Build.0 = Release|Win32
+		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Release|x64.ActiveCfg = Release|x64
+		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Release|x64.Build.0 = Release|x64
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Template|Win32.ActiveCfg = Template|Win32
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Template|Win32.Build.0 = Template|Win32
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.Template|x64.ActiveCfg = Template|x64
@@ -30,6 +34,22 @@ Global
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.X64|Win32.Build.0 = X64|Win32
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.X64|x64.ActiveCfg = X64|x64
 		{7F3ED67C-DA10-4F45-A23D-90A93A2E09C8}.X64|x64.Build.0 = X64|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Debug|Win32.ActiveCfg = Debug|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Debug|Win32.Build.0 = Debug|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Debug|x64.ActiveCfg = Debug|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Debug|x64.Build.0 = Debug|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Release|Win32.ActiveCfg = Release|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Release|Win32.Build.0 = Release|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Release|x64.ActiveCfg = Release|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Release|x64.Build.0 = Release|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Template|Win32.ActiveCfg = Release|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Template|Win32.Build.0 = Release|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Template|x64.ActiveCfg = Release|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.Template|x64.Build.0 = Release|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.X64|Win32.ActiveCfg = Release|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.X64|Win32.Build.0 = Release|Win32
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.X64|x64.ActiveCfg = Release|x64
+		{79A1CE70-24CD-4E1E-956F-AA69F66C8D08}.X64|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

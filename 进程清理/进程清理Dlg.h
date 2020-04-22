@@ -120,3 +120,7 @@ public:
 	int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 	//创建文件夹
 	void CreateDir(CString dirName);
+	void DebugPrivilege();
+	BOOL Inject(DWORD dwPid, const char *szDllname);
+	BOOL UnInject(DWORD dwPid, TCHAR *szDllname);
+	DWORD FindProcessID(LPCTSTR szProcessName);

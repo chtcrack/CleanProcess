@@ -16,6 +16,8 @@ using namespace Gdiplus;
 #define WM_NC (WM_USER+1002)
 #define Estructcount 50
 // CMyDlg 对话框
+DWORD dwPID;
+char DllPath[500];
 CMyDlg* MainThis = 0;
 CIni ini("Setting.ini");
 WantMprocess EProcessStruct[Estructcount];
@@ -79,6 +81,39 @@ BOOL CMyDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	//EnablePrivilege();
+	int i;
+	
+	char DllName[] = "Monitor.dll";
+	
+	GetModuleFileName(NULL, DllPath, 500);
+
+	for (i = strlen(DllPath) - 1; i >= 0; i--)
+	{
+		if (DllPath[i] == '\\')
+		{
+			break;
+		}
+	}
+
+	CopyMemory(DllPath + (i + 1), DllName, strlen(DllName));
+	DllPath[i + strlen(DllName) + 1] = 0x00;
+	//dwPID = FindProcessID("515sa.exe");
+	dwPID = FindProcessID("explorer.exe");
+
+	if (dwPID == (DWORD)INVALID_HANDLE_VALUE)
+	{
+		MyDebug("Can't find Process explorer.exe\n");
+	}
+	else
+	{
+		//printf("dll路径:%s", DllPath);
+		MyDebug("开始注入dll %s", DllPath);
+
+
+		Inject(dwPID, DllPath);
+	}
+
+
 	LoadiniToListCtrl();
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(BST_CHECKED);
 	Adminps = ini.GetValue("PS", "Pass");
@@ -569,9 +604,11 @@ void CMyDlg::OnSize(UINT nType, int cx, int cy)
 
 void CMyDlg::OnDestroy()
 {
+	//ToDo 通知dll自我卸载
 	CDialog::OnDestroy();
 	// 在托盘区删除图标
 	Shell_NotifyIcon(NIM_DELETE, &NotifyIcon);
+
 	// TODO: 在此处添加消息处理程序代码
 }
 
@@ -778,7 +815,7 @@ void CMyDlg::OnBnClickedButton2()
 	Showprocessdlg.DeleteTempMap();
 	Showprocessdlg.dispatchMap;
 	Showprocessdlg.DestroyWindow();
-	Showprocessdlg.MainWinThis = (DWORD)this;
+	Showprocessdlg.MainWinThis = (DWORD64)this;
 	Showprocessdlg.Create(IDD_ProcessDIALOG);
 	Showprocessdlg.ShowWindow(SW_SHOW);
 	Showprocessdlg.SetWindowText(_T("进程管理"));
@@ -1088,7 +1125,7 @@ void CMyDlg::Showmainwindow()
 		Inputadminps.DeleteTempMap();
 		Inputadminps.dispatchMap;
 		Inputadminps.DestroyWindow();
-		Inputadminps.MainThis = (DWORD)this;
+		Inputadminps.MainThis = (DWORD64)this;
 		Inputadminps.Create(IDD_CheckAdmin);
 		Inputadminps.ShowWindow(SW_SHOW);
 		Inputadminps.SetForegroundWindow();
@@ -1200,3 +1237,132 @@ void CreateDir(CString dirName) {
 		::CreateDirectory(dirName, NULL);//创建目录,已有的话不影响
 	}
 }
+
+void DebugPrivilege()
+{
+	HANDLE hToken = NULL;
+	BOOL bRet = OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &hToken);
+
+	if (bRet == TRUE)
+	{
+		TOKEN_PRIVILEGES tp;
+		tp.PrivilegeCount = 1;
+
+		LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &tp.Privileges[0].Luid);
+
+		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+		AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
+
+		CloseHandle(hToken);
+	}
+}
+
+BOOL Inject(DWORD dwPid, const char *szDllname)
+{
+	DebugPrivilege();
+
+	BOOL bRet = FALSE;
+	char *pFunName = "LoadLibraryA";
+	//打开目标进程
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+	if (hProcess == NULL)
+		return FALSE;
+
+	//计算欲注入DLL文件完整路径长度
+#ifndef _WIN64
+	int nDllLen = strlen(szDllname) + sizeof(char);
+#else
+	SIZE_T nDllLen = strlen(szDllname) + sizeof(char);
+#endif
+	//在目标进程申请一块长度为nDllLen大小的内存空间
+	PVOID pDllAddr = VirtualAllocEx(hProcess, NULL, nDllLen, MEM_COMMIT, PAGE_READWRITE);
+	if (pDllAddr == NULL)
+		return FALSE;
+
+	//将欲注入DLL文件的完整路径写入目标进程中申请的空间内
+#ifndef _WIN64
+	DWORD dwWriteNum = 0;
+#else
+	SIZE_T dwWriteNum = 0;
+#endif
+	WriteProcessMemory(hProcess, pDllAddr, szDllname, nDllLen, &dwWriteNum);
+
+	//获取LoadLibraryA函数的地址
+	FARPROC pFunAddr = GetProcAddress(GetModuleHandleA("kernel32.dll"), pFunName);
+
+	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pFunAddr, pDllAddr, 0, NULL);
+	if (hThread)
+	{
+		WaitForSingleObject(hThread, INFINITE);//等待线程结束
+		CloseHandle(hThread);
+		bRet = TRUE;
+	}
+
+	VirtualFreeEx(hProcess, pDllAddr, sizeof(pDllAddr), MEM_RELEASE);
+	CloseHandle(hProcess);
+	return bRet;
+}
+BOOL UnInject(DWORD dwPid, TCHAR *szDllname)
+{
+	DebugPrivilege();
+
+	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPid);
+
+	BOOL isFind = FALSE;
+	MODULEENTRY32 me32;
+	me32.dwSize = sizeof(me32);
+	BOOL bRet = Module32First(hSnap, &me32);
+	while (bRet)
+	{
+		if (lstrcmp(me32.szExePath, szDllname) == 0)
+		{
+			isFind = TRUE;
+			break;
+		}
+		bRet = Module32Next(hSnap, &me32);
+	}
+	CloseHandle(hSnap);
+	if (isFind == FALSE)
+		return FALSE;
+
+	char *pFunName = "FreeLibrary";
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+	if (hProcess == NULL)
+		return FALSE;
+
+	FARPROC pFunAddr = GetProcAddress(GetModuleHandleA("kernel32.dll"), pFunName);
+
+	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pFunAddr, me32.hModule, 0, NULL);
+	WaitForSingleObject(hThread, INFINITE);
+
+	CloseHandle(hThread);
+	CloseHandle(hProcess);
+	return TRUE;
+}
+DWORD FindProcessID(LPCTSTR szProcessName)
+{
+	DWORD dwPID = 0xFFFFFFFF;
+	HANDLE hSnapShot = INVALID_HANDLE_VALUE;
+	PROCESSENTRY32 pe;
+
+	//获取系统快照
+	pe.dwSize = sizeof(PROCESSENTRY32);
+	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, NULL);
+
+	//查找进程
+	Process32First(hSnapShot, &pe);
+
+	do
+	{
+		if (!strcmp(szProcessName, (LPCSTR)pe.szExeFile))
+		{
+			dwPID = pe.th32ProcessID;
+			break;
+		}
+	} while (Process32Next(hSnapShot, &pe));
+
+	CloseHandle(hSnapShot);
+	return dwPID;
+}
+

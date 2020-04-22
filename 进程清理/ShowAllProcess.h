@@ -26,7 +26,7 @@ public:
 	NtSuspendProcess m_NtSuspendProcess;
 	NtResumeProcess   m_NtResumeProcess;
 
-	DWORD MainWinThis;
+	DWORD64 MainWinThis;
 	CString PidToPath(DWORD id);//之能得到x86下的路径
 	BOOL EnablePrivileges(HANDLE hToken,LPCSTR szPrivName);
 	afx_msg void OnBnClickedOk();

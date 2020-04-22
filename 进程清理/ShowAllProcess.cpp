@@ -29,7 +29,7 @@ int WINAPI GetProcessCommandLine(DWORD dwPID, LPTSTR lpszCommandLine, DWORD dwBy
 
 	DWORD dwThreadId = 0;
 	DWORD dwExitCode = 0;
-	DWORD dwReaded = 0;
+	SIZE_T dwReaded = 0;
 	HANDLE hThread  = ::CreateRemoteThread(hProcess, NULL, NULL, (LPTHREAD_START_ROUTINE)GetCommandLine, NULL, 0, &dwThreadId);
 
 	if (hThread)
@@ -39,7 +39,7 @@ int WINAPI GetProcessCommandLine(DWORD dwPID, LPTSTR lpszCommandLine, DWORD dwBy
 		::ReadProcessMemory(hProcess, (LPCVOID)dwExitCode, lpszCommandLine, dwByteOfSize, &dwReaded);
 	}
 	CloseHandle(hProcess);
-	return dwReaded;
+	return 1;
 }
 IMPLEMENT_DYNAMIC(ShowAllProcess, CDialog)
 

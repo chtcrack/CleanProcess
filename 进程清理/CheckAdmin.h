@@ -10,7 +10,7 @@ class CheckAdmin : public CDialog
 public:
 	CheckAdmin(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CheckAdmin();
-	DWORD MainThis;
+	DWORD64 MainThis;
 // 对话框数据
 	enum { IDD = IDD_CheckAdmin };
 
