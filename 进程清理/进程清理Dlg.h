@@ -124,3 +124,7 @@ public:
 	BOOL Inject(DWORD dwPid, const char *szDllname);
 	BOOL UnInject(DWORD dwPid, TCHAR *szDllname);
 	DWORD FindProcessID(LPCTSTR szProcessName);
+	// 安全的取得真实系统信息
+	VOID SafeGetNativeSystemInfo(__out LPSYSTEM_INFO lpSystemInfo);
+	// 获取操作系统位数
+	int GetSystemBits();

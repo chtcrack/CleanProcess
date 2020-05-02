@@ -26,6 +26,7 @@ NOTIFYICONDATA NotifyIcon;
 bool CanMon = true;
 bool CanMonwindows = true;
 bool Adminmode = false;
+bool AutoCapture = false;
 TCHAR outputbuffer[1024] = { 0 };
 CString Dosinfo, Adminps;
 HANDLE Monitorprocess;
@@ -81,37 +82,41 @@ BOOL CMyDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	//EnablePrivilege();
-	int i;
-	
-	char DllName[] = "Monitor.dll";
-	
-	GetModuleFileName(NULL, DllPath, 500);
-
-	for (i = strlen(DllPath) - 1; i >= 0; i--)
+	int selfbit = sizeof(int*);
+	if (selfbit==8)//自身是64位才进行注入操作
 	{
-		if (DllPath[i] == '\\')
+		int i;
+		char DllName[] = "Monitor.dll";
+
+		GetModuleFileName(NULL, DllPath, 500);
+
+		for (i = strlen(DllPath) - 1; i >= 0; i--)
 		{
-			break;
+			if (DllPath[i] == '\\')
+			{
+				break;
+			}
+		}
+
+		CopyMemory(DllPath + (i + 1), DllName, strlen(DllName));
+		DllPath[i + strlen(DllName) + 1] = 0x00;
+		//dwPID = FindProcessID("515sa.exe");
+		dwPID = FindProcessID("explorer.exe");
+
+		if (dwPID == (DWORD)INVALID_HANDLE_VALUE)
+		{
+			MyDebug("Can't find Process explorer.exe\n");
+		}
+		else
+		{
+			//printf("dll路径:%s", DllPath);
+			MyDebug("开始注入dll %s", DllPath);
+
+
+			Inject(dwPID, DllPath);
 		}
 	}
 
-	CopyMemory(DllPath + (i + 1), DllName, strlen(DllName));
-	DllPath[i + strlen(DllName) + 1] = 0x00;
-	//dwPID = FindProcessID("515sa.exe");
-	dwPID = FindProcessID("explorer.exe");
-
-	if (dwPID == (DWORD)INVALID_HANDLE_VALUE)
-	{
-		MyDebug("Can't find Process explorer.exe\n");
-	}
-	else
-	{
-		//printf("dll路径:%s", DllPath);
-		MyDebug("开始注入dll %s", DllPath);
-
-
-		Inject(dwPID, DllPath);
-	}
 
 
 	LoadiniToListCtrl();
@@ -124,6 +129,14 @@ BOOL CMyDlg::OnInitDialog()
 	}
 	else {
 		((CButton*)GetDlgItem(IDC_CHECK2))->SetCheck(BST_UNCHECKED);
+	}
+	AutoStartValue= ini.GetValue("System", "AutoCapture");
+	if (AutoStartValue == "1")
+	{
+		((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(BST_CHECKED);
+	}
+	else {
+		((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(BST_UNCHECKED);
 	}
 	synctimeing = false;
 	MainThis = this;
@@ -400,7 +413,7 @@ void CheckProcess(CMyDlg* MydlgThis)
 				}
 			}
 		}
-		CaptureScreen();
+		if(AutoCapture) CaptureScreen();
 		Sleep(3000);
 	}
 
@@ -1145,6 +1158,16 @@ void CMyDlg::OnBnClickedCheck2()
 		AutoStart(true);
 		ini.SetValue("System", "Autostart", "0");
 	}
+	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK3))//选中
+	{
+		AutoCapture = true;
+		ini.SetValue("System", "AutoCapture", "1");
+	}
+	else//未选中
+	{
+		AutoCapture = false;
+		ini.SetValue("System", "AutoCapture", "0");
+	}
 }
 //截屏
 void CaptureScreen()
@@ -1365,4 +1388,30 @@ DWORD FindProcessID(LPCTSTR szProcessName)
 	CloseHandle(hSnapShot);
 	return dwPID;
 }
-
+// 安全的取得真实系统信息
+VOID SafeGetNativeSystemInfo(__out LPSYSTEM_INFO lpSystemInfo)
+{
+	if (NULL == lpSystemInfo)    return;
+	typedef VOID(WINAPI *LPFN_GetNativeSystemInfo)(LPSYSTEM_INFO lpSystemInfo);
+	LPFN_GetNativeSystemInfo fnGetNativeSystemInfo = (LPFN_GetNativeSystemInfo)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetNativeSystemInfo");;
+	if (NULL != fnGetNativeSystemInfo)
+	{
+		fnGetNativeSystemInfo(lpSystemInfo);
+	}
+	else
+	{
+		GetSystemInfo(lpSystemInfo);
+	}
+}
+// 获取操作系统位数
+int GetSystemBits()
+{
+	SYSTEM_INFO si;
+	SafeGetNativeSystemInfo(&si);
+	if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||
+		si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64)
+	{
+		return 64;
+	}
+	return 32;
+}

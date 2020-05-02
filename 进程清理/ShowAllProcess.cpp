@@ -20,7 +20,7 @@ GetProcessCommandLine(628, szBuffer, sizeof(szBuffer)); //628改成你要获取的进程P
 int WINAPI GetProcessCommandLine(DWORD dwPID, LPTSTR lpszCommandLine, DWORD dwByteOfSize)
 {
 	
-	HANDLE hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID);
+	HANDLE hProcess = ::OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_CREATE_THREAD, FALSE, dwPID);
 
 	if (!hProcess)
 	{
@@ -34,10 +34,19 @@ int WINAPI GetProcessCommandLine(DWORD dwPID, LPTSTR lpszCommandLine, DWORD dwBy
 
 	if (hThread)
 	{
-		::WaitForSingleObject(hThread, INFINITE);
+		int selfbit = sizeof(int*);//获取int类型指针长度
+		if (selfbit==4)//指针是4位代表自身是32位程序
+		{
+			::WaitForSingleObject(hThread, INFINITE);
+		}
+		else {//64位,以后还有128,256位则需要精确判断..
+			::WaitForSingleObject(hThread, 100);
+		}
+		
 		::GetExitCodeThread(hThread, &dwExitCode);
 		::ReadProcessMemory(hProcess, (LPCVOID)dwExitCode, lpszCommandLine, dwByteOfSize, &dwReaded);
 	}
+	CloseHandle(hThread);
 	CloseHandle(hProcess);
 	return 1;
 }
@@ -123,7 +132,11 @@ void ShowAllProcess::GetAllProcess()
 	BOOL return_value;
 	return_value=::Process32First(Snapshot,&processListStr);
 	//获得系统进程链表中第一个进程的信息
-	
+	if (!return_value)
+	{
+		CloseHandle(Snapshot);
+		return;
+	}
 	int i=0;//item index
 	while(return_value)
 	{
@@ -142,7 +155,6 @@ void ShowAllProcess::GetAllProcess()
 		m_showlist.SetItemText(i,5,szBuffer);
 		s.Format("%d",GetProcessMem(processListStr.th32ProcessID));
 		m_showlist.SetItemText(i,6,s+_T("K"));
-
 		TCHAR buf[1024]={0};
 		::SendMessage(GetAppWindow(processListStr.th32ProcessID),WM_GETTEXT, sizeof(buf)/sizeof(TCHAR), (LPARAM)(void*)buf);
 		m_showlist.SetItemText(i,7,buf);
@@ -150,6 +162,7 @@ void ShowAllProcess::GetAllProcess()
 		//获得系统进程链表中下一个进程的信息
 		i++;
 	}
+	
 	CloseHandle(Snapshot);
 }
 

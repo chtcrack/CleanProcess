@@ -48,6 +48,7 @@
 #define IDC_INPUTPS                     1029
 #define IDC_SETPS                       1030
 #define IDC_CHECK2                      1031
+#define IDC_CHECK3                      1032
 #define ID_32771                        32771
 #define ID__32772                       32772
 #define ID__32773                       32773
@@ -68,7 +69,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        181
 #define _APS_NEXT_COMMAND_VALUE         32787
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_CONTROL_VALUE         1033
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
