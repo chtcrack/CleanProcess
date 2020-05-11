@@ -34,15 +34,7 @@ int WINAPI GetProcessCommandLine(DWORD dwPID, LPTSTR lpszCommandLine, DWORD dwBy
 
 	if (hThread)
 	{
-		int selfbit = sizeof(int*);//获取int类型指针长度
-		if (selfbit==4)//指针是4位代表自身是32位程序
-		{
-			::WaitForSingleObject(hThread, INFINITE);
-		}
-		else {//64位,以后还有128,256位则需要精确判断..
-			::WaitForSingleObject(hThread, 100);
-		}
-		
+		::WaitForSingleObject(hThread, 100);
 		::GetExitCodeThread(hThread, &dwExitCode);
 		::ReadProcessMemory(hProcess, (LPCVOID)dwExitCode, lpszCommandLine, dwByteOfSize, &dwReaded);
 	}
