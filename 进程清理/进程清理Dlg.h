@@ -128,3 +128,4 @@ public:
 	VOID SafeGetNativeSystemInfo(__out LPSYSTEM_INFO lpSystemInfo);
 	// 获取操作系统位数
 	int GetSystemBits();
+	int SendDataToDll();

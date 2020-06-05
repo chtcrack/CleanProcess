@@ -92,7 +92,7 @@ void ShowAllProcess::OnBnClickedOk()
 BOOL ShowAllProcess::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-
+	MyDebug("进程管理初始化");
 	// TODO:  在此添加额外的初始化
 	Mydlgptr=(CMyDlg*)MainWinThis;
 	DWORD exstyle = m_showlist.GetExtendedStyle();

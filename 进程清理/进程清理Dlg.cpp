@@ -30,6 +30,10 @@ bool AutoCapture = false;
 TCHAR outputbuffer[1024] = { 0 };
 CString Dosinfo, Adminps;
 HANDLE Monitorprocess;
+HANDLE AdminH;
+DWORD64 ConAddr;//管理器自身创建的内存映射文件地址
+
+
 CMyDlg::CMyDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CMyDlg::IDD, pParent)
 {
@@ -70,6 +74,60 @@ BEGIN_MESSAGE_MAP(CMyDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK2, &CMyDlg::OnBnClickedCheck2)
 END_MESSAGE_MAP()
 
+//发送结构体数据给dll
+int SendDataToDll()
+{
+	AdminH = OpenFileMapping(FILE_MAP_WRITE, FALSE, "AdminWindows");
+	//读取是否有帐号名的内存映射文件,有则下一个帐号继续查询,没有则将帐号和密码等帐号信息写入一个内存映射供登录dll登录用,然后启动客户端并注入登录dll进行登录
+	if (AdminH == 0)
+	{
+		MyDebug("创建内存映射");
+		AdminH = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 0x5000, "AdminWindows");
+	}
+	if (AdminH != 0)
+	{
+
+		ConAddr = (DWORD64)(::MapViewOfFile(AdminH, FILE_MAP_WRITE, 0, 0, 0));
+		MyDebug("获取内存映射地址-%08X", ConAddr);
+	}
+	if (ConAddr == 0)
+	{
+		MyDebug("内存映射创建失败", ConAddr);
+	}
+	else
+	{
+		memset((PVOID)ConAddr, 0, 0x5000);
+	}
+	//发送结构体给dll
+	DWORD64 tmpaddr = 0;
+	if (ConAddr)
+	{
+		MyDebug("开始传送结构体");
+		tmpaddr = (DWORD64)ConAddr;
+		MyDebug("获取内存映射地址2-%08X", tmpaddr);
+		
+		for (int i = 0; i < Estructcount; i++)
+		{
+			memcpy((LPVOID)tmpaddr, &Ewindowsname[i], 256);
+			tmpaddr += 256;
+		}
+		MyDebug("传送结构体结束");
+		if (BST_CHECKED == IsDlgButtonChecked(MainThis->GetSafeHwnd(),IDC_CHECK1))
+		{
+			CanMonwindows = true;
+			if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x1;
+		}
+		else
+		{
+			CanMonwindows = false;
+			if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x0;
+		}
+	}
+	else {
+		return 0;
+	}
+	return 1;
+}
 
 // CMyDlg 消息处理程序
 
@@ -81,13 +139,13 @@ BOOL CMyDlg::OnInitDialog()
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
+	LoadiniToListCtrl();
 	//EnablePrivilege();
 	int selfbit = sizeof(int*);
 	if (selfbit==8)//自身是64位才进行注入操作
 	{
 		int i;
 		char DllName[] = "Monitor.dll";
-
 		GetModuleFileName(NULL, DllPath, 500);
 
 		for (i = strlen(DllPath) - 1; i >= 0; i--)
@@ -97,12 +155,10 @@ BOOL CMyDlg::OnInitDialog()
 				break;
 			}
 		}
-
 		CopyMemory(DllPath + (i + 1), DllName, strlen(DllName));
 		DllPath[i + strlen(DllName) + 1] = 0x00;
 		//dwPID = FindProcessID("515sa.exe");
 		dwPID = FindProcessID("explorer.exe");
-
 		if (dwPID == (DWORD)INVALID_HANDLE_VALUE)
 		{
 			MyDebug("Can't find Process explorer.exe\n");
@@ -111,15 +167,18 @@ BOOL CMyDlg::OnInitDialog()
 		{
 			//printf("dll路径:%s", DllPath);
 			MyDebug("开始注入dll %s", DllPath);
-
-
-			Inject(dwPID, DllPath);
+			if (!SendDataToDll())
+			{
+				::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CheckWindows, (LPVOID)this, NULL, NULL);//启动一个线程
+			}
+			else {
+				if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x1;
+				Inject(dwPID, DllPath);
+			}
 		}
 	}
 
-
-
-	LoadiniToListCtrl();
+	
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(BST_CHECKED);
 	Adminps = ini.GetValue("PS", "Pass");
 	CString AutoStartValue = ini.GetValue("System", "AutoStart");
@@ -140,13 +199,14 @@ BOOL CMyDlg::OnInitDialog()
 	}
 	synctimeing = false;
 	MainThis = this;
-	this->SetWindowText(_T("进程清理V1.13-更新时间:2017-09-04"));
+	this->SetWindowText(_T("进程清理V2.0-更新时间:2020-06-05"));
 	INITPorcessStruct();//初始化进程结构体
 	InitNotify();//初始化图标
 	Shell_NotifyIcon(NIM_ADD, &NotifyIcon);
+	
 
 	Monitorprocess = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CheckProcess, (LPVOID)this, NULL, NULL);//启动一个线程
-	::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CheckWindows, (LPVOID)this, NULL, NULL);//启动一个线程
+	
 	Nsynctime();
 	return TRUE;  // 除非设置了控件的焦点，否则返回 TRUE
 }
@@ -617,8 +677,12 @@ void CMyDlg::OnSize(UINT nType, int cx, int cy)
 
 void CMyDlg::OnDestroy()
 {
-	//ToDo 通知dll自我卸载
+	
+		
+
 	CDialog::OnDestroy();
+	UnmapViewOfFile((LPCVOID)ConAddr);
+	CloseHandle(AdminH);
 	// 在托盘区删除图标
 	Shell_NotifyIcon(NIM_DELETE, &NotifyIcon);
 
@@ -685,6 +749,7 @@ void CMyDlg::OnClose()
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	Adminmode = false;
+	Shell_NotifyIcon(NIM_ADD, &NotifyIcon);
 	ShowWindow(SW_MINIMIZE);
 	//CDialog::OnClose();
 }
@@ -693,6 +758,7 @@ void CMyDlg::OnClose()
 void CMyDlg::NPause()
 {
 	CanMon = FALSE;
+
 	DWORD Checkthreadcode = 0;
 
 	while (1)
@@ -732,6 +798,18 @@ void CMyDlg::DestorySelf()//点击退出程序
 {
 	if (Adminmode)
 	{
+		MyDebug("主控销毁");
+		//ToDo 通知dll自我卸载
+
+		if (!IsBadWritePtr((LPVOID)ConAddr, 4))
+		{
+			MyDebug("主控通知dll自我退出");
+			*(DWORD64*)(ConAddr + 0x4000) = 0x1;
+		}
+		UnmapViewOfFile((LPCVOID)ConAddr);
+		CloseHandle(AdminH);
+		// 在托盘区删除图标
+		Shell_NotifyIcon(NIM_DELETE, &NotifyIcon);
 		HANDLE hself = GetCurrentProcess();
 
 		TerminateProcess(hself, 0);
@@ -980,7 +1058,7 @@ void ReadAccountini()
 	{
 
 		CString2Char(arrValue[i], Ewindowsname[i].WindowsName);
-		//	MyDebug("ini里的值：%s结构体里的值：%s",arrValue[i],Ewindowsname[i].WindowsName);
+		//MyDebug("ini里的值：%s结构体里的值：%s",arrValue[i],Ewindowsname[i].WindowsName);
 
 	}
 }
@@ -1001,6 +1079,7 @@ void CMyDlg::OnBnClickedButton3()
 	CString Keyword = "";
 	GetDlgItemText(IDC_EDIT1, Keyword);
 	Addkeyword(Keyword);
+	SendDataToDll();
 	SetDlgItemText(IDC_EDIT1, "");
 }
 
@@ -1015,6 +1094,7 @@ void CMyDlg::OnLbnDblclkList1()
 		Keywordlist.GetText(iItemSel, Selword);
 		//AfxMessageBox(Selword);
 		DelAccount(Selword);
+		SendDataToDll();
 	}
 
 }
@@ -1099,10 +1179,12 @@ void CMyDlg::OnBnClickedCheck1()
 	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK1))
 	{
 		CanMonwindows = true;
+		if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x1;
 	}
 	else
 	{
 		CanMonwindows = false;
+		if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x0;
 	}
 }
 bool CMyDlg::Checkadminps(CString Pass)

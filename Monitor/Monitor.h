@@ -26,3 +26,9 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 DWORD WINAPI WorkThread(PVOID param);
+typedef struct WindowsNameStruct
+{
+	char WindowsName[256];//´°¿ÚÀàÃû
+
+}WantWindowsNameStruct, *PWindowsNameStruct;
+BOOL CALLBACK EnumWindowsProcess(HWND hwnd, LPARAM lParam);

@@ -322,6 +322,11 @@ BEGIN
     0
 END
 
+IDD_ProcessDIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
