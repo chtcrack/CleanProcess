@@ -31,4 +31,16 @@ typedef struct WindowsNameStruct
 	char WindowsName[256];//窗口类名
 
 }WantWindowsNameStruct, *PWindowsNameStruct;
+typedef struct TerminateProStruct
+{
+	HWND Phwnd;//窗口句柄
+	HANDLE hProc;
+	CString Winname;
+
+}WantTerminateNameStruct, *PTerminateNameStruct;
+
 BOOL CALLBACK EnumWindowsProcess(HWND hwnd, LPARAM lParam);
+//获取系统时间
+CString Getsystime();
+//清除进程线程
+DWORD WINAPI TerminateThread(PVOID param);

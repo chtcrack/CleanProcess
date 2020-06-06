@@ -15,6 +15,7 @@ using namespace Gdiplus;
 
 #define WM_NC (WM_USER+1002)
 #define Estructcount 50
+#define Estructsize 256//监控结构体字节数
 // CMyDlg 对话框
 DWORD dwPID;
 char DllPath[500];
@@ -78,7 +79,6 @@ END_MESSAGE_MAP()
 int SendDataToDll()
 {
 	AdminH = OpenFileMapping(FILE_MAP_WRITE, FALSE, "AdminWindows");
-	//读取是否有帐号名的内存映射文件,有则下一个帐号继续查询,没有则将帐号和密码等帐号信息写入一个内存映射供登录dll登录用,然后启动客户端并注入登录dll进行登录
 	if (AdminH == 0)
 	{
 		MyDebug("创建内存映射");
@@ -108,8 +108,8 @@ int SendDataToDll()
 		
 		for (int i = 0; i < Estructcount; i++)
 		{
-			memcpy((LPVOID)tmpaddr, &Ewindowsname[i], 256);
-			tmpaddr += 256;
+			memcpy((LPVOID)tmpaddr, &Ewindowsname[i], Estructsize);
+			tmpaddr += Estructsize;
 		}
 		MyDebug("传送结构体结束");
 		if (BST_CHECKED == IsDlgButtonChecked(MainThis->GetSafeHwnd(),IDC_CHECK1))
@@ -757,22 +757,23 @@ void CMyDlg::OnClose()
 //点击暂停清理
 void CMyDlg::NPause()
 {
+	if (!Adminmode) return;
 	CanMon = FALSE;
 
 	DWORD Checkthreadcode = 0;
-
-	while (1)
-	{
-		Checkthreadcode = WaitForSingleObject(Monitorprocess, 0);
-		if (Checkthreadcode == WAIT_TIMEOUT)
-		{
-		}
-		else
-		{
-			break;
-		}
-		Sleep(200);
-	}
+	if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x0;//写入内存让dll停止监控
+// 	while (1)
+// 	{
+// 		Checkthreadcode = WaitForSingleObject(Monitorprocess, 2000);
+// 		if (Checkthreadcode == WAIT_TIMEOUT)
+// 		{
+// 		}
+// 		else
+// 		{
+// 			break;
+// 		}
+// 		Sleep(200);
+// 	}
 	NotifyIcon.hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_ICON1));
 	_tcscpy_s(NotifyIcon.szInfoTitle, _T("啊啊啊!"));
 	_tcscpy_s(NotifyIcon.szInfo, _T("进程清理已停止工作了!"));
@@ -784,7 +785,7 @@ void CMyDlg::NPause()
 void CMyDlg::ResumeMon()
 {
 	CanMon = TRUE;
-
+	if (!IsBadWritePtr((LPVOID)ConAddr, 4)) *(DWORD64*)(ConAddr + 0x4010) = 0x1;//写入内存让dll开始监控
 	Monitorprocess = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CheckProcess, (LPVOID)this, NULL, NULL);//启动一个线程
 	NotifyIcon.hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME));
 	_tcscpy_s(NotifyIcon.szInfoTitle, _T("嘿嘿!"));
