@@ -129,3 +129,4 @@ public:
 	// 获取操作系统位数
 	int GetSystemBits();
 	int SendDataToDll();
+	int SaveTask(CString strTaskName,CString ExePath,bool deletejob=false);

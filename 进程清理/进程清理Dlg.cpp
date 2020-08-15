@@ -7,8 +7,12 @@
 #include "Tlhelp32.h"
 #include ".\进程清理dlg.h"
 #include "gdiplus.h" 
+#include<taskschd.h>
+#include<mstask.h>
 using namespace Gdiplus;
 #pragma comment(lib,"gdiplus.lib")
+#pragma comment(lib, "taskschd.lib");
+#pragma comment(lib, "mstask.lib");
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -315,7 +319,7 @@ bool CMyDlg::StartSynctime(CString TimeserverAddr)
 
 	}
 }
-//运行指定程序,参数1路径,参数
+//运行指定程序,参数1路径,参数2,进程名,参数3,是否显示窗口
 PROCESS_INFORMATION RunApp(CString runpath, CString exename, bool Showwindows)
 {
 	CString InfoText = _T("");
@@ -703,47 +707,12 @@ void CMyDlg::OnNcPaint()
 //写入系统注册表启动项
 bool AutoStart(bool DeleteKey)
 {
+	TCHAR pFileName[MAX_PATH] = { 0 };
+	GetModuleFileName(NULL, pFileName, MAX_PATH);
+	CString exepath = pFileName;
+	SaveTask("CleanProcess", exepath, DeleteKey);
+	return true;
 
-	TCHAR StartupName[] = TEXT("CleanProcess");
-	HKEY hKey;
-	//找到系统的启动项  
-
-	LPCTSTR lpRun = TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
-	//打开启动项Key
-	long lRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpRun, 0, KEY_WRITE, &hKey);
-	if (lRet == ERROR_SUCCESS)
-	{
-		TCHAR pFileName[MAX_PATH] = { 0 };
-		//得到程序自身的全路径
-		GetModuleFileName(NULL, pFileName, MAX_PATH);
-		//MyDebug(_T("%s"),pFileName);
-		//添加一个子Key,并设置值 StartupName=pFileName
-		if (DeleteKey)
-		{
-			lRet = RegDeleteValue(hKey, StartupName);
-		}
-		else {
-			lRet = RegSetValueEx(hKey, StartupName, 0, REG_SZ, (BYTE*)pFileName, (lstrlen(pFileName) + 1) * sizeof(TCHAR));
-		}
-
-		//关闭注册表
-		RegCloseKey(hKey);
-		if (lRet == ERROR_SUCCESS)
-		{
-			//注册表写入成功
-			return true;
-		}
-		else
-		{
-			//注册表写入失败 
-			return false;
-		}
-	}
-	else
-	{
-		//注册表打开失败
-		return false;
-	}
 }
 void CMyDlg::OnClose()
 {
@@ -1498,3 +1467,326 @@ int GetSystemBits()
 	}
 	return 32;
 }
+//创建计划任务.
+int SaveTask(CString strTaskName, CString ExePath,bool deletejob)
+{
+
+	//  Initialize COM.
+	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	if (FAILED(hr))
+	{
+		printf("\nCoInitializeEx failed: %x", hr);
+		return 1;
+	}
+
+	//  Set general COM security levels.
+	hr = CoInitializeSecurity(
+		NULL,
+		-1,
+		NULL,
+		NULL,
+		RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
+		RPC_C_IMP_LEVEL_IMPERSONATE,
+		NULL,
+		0,
+		NULL);
+
+	if (FAILED(hr))
+	{
+		printf("\nCoInitializeSecurity failed: %x", hr);
+		CoUninitialize();
+		return 1;
+	}
+
+	//引用windows的com组件需要创建套间，套间的作用可以百度到,其实就是com组件对象与该线程对应了起来，互不干扰；
+
+	ITaskService* pService = NULL;
+
+	hr = CoCreateInstance(CLSID_TaskScheduler,
+		NULL,
+		CLSCTX_INPROC_SERVER,
+		IID_ITaskService,
+		(void**)&pService);
+	if (FAILED(hr))
+	{
+		printf("Failed to create an instance of ITaskService: %x", hr);
+		CoUninitialize();
+		return 1;
+	}
+
+	//  Connect to the task service.
+	hr = pService->Connect(_variant_t(), _variant_t(),
+		_variant_t(), _variant_t());
+	if (FAILED(hr))
+	{
+		printf("ITaskService::Connect failed: %x", hr);
+		pService->Release();
+		CoUninitialize();
+		return 1;
+	}
+		//  Get the pointer to the root task folder.  This folder will hold the
+		//  new task that is registered.
+		ITaskFolder *pRootFolder = NULL;
+		hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
+		if (FAILED(hr))
+		{
+			printf("Cannot get Root folder pointer: %x", hr);
+			pService->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+	pRootFolder->DeleteTask(_bstr_t(strTaskName),0);//如果这个定时任务已经存在则删除；
+	if (deletejob)
+	{
+		pService->Release();
+		pRootFolder->Release();
+		CoUninitialize();
+		return 1;
+	}
+	ITaskDefinition* pTaskDefinition = NULL;//定时任务的定义接口，通过这个接口定义接口的一些属性、权限、触发器、参数；
+	hr = pService->NewTask(0, &pTaskDefinition);
+	pService->Release();  // COM clean up.  Pointer is no longer used.
+
+		//////////////////////////////////////////////////////////////////////////////在这里设置运行权限；
+
+		IPrincipal* pTaskLevel = NULL;
+		pTaskDefinition->get_Principal(&pTaskLevel);
+		pTaskLevel->put_RunLevel(TASK_RUNLEVEL_HIGHEST);//最高权限，如果想设置为最低，则为TASK_RUNLEVEL_LUA
+		pTaskLevel->Release();
+		//////////////////////////////////////////////////////////////////////////////权限设置完毕；
+
+		/////////////////////////////////////////////////////////////////////////////设置定时任务的属性；
+
+		//  ------------------------------------------------------
+		//  Create the principal for the task - these credentials
+		//  are overwritten with the credentials passed to RegisterTaskDefinition
+		IPrincipal *pPrincipal = NULL;
+		hr = pTaskDefinition->get_Principal(&pPrincipal);
+		if (FAILED(hr))
+		{
+			printf("\nCannot get principal pointer: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		//  Set up principal logon type to interactive logon
+		hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
+		pPrincipal->Release();
+		if (FAILED(hr))
+		{
+			printf("\nCannot put principal info: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+
+		ITaskSettings * pSettings = NULL;
+
+		if (SUCCEEDED(pTaskDefinition->get_Settings(&pSettings)))
+
+		{
+
+			pSettings->put_StartWhenAvailable(VARIANT_BOOL(true));//定时任务即使过了定时的时间，也可以运行；
+
+			pSettings->put_DisallowStartIfOnBatteries(VARIANT_BOOL(false)); //电池供电的时候不允许启动
+
+			pSettings->put_StopIfGoingOnBatteries(VARIANT_BOOL(false));
+			//电池供电在运行的时候不停止
+
+			pSettings->put_RunOnlyIfIdle(VARIANT_BOOL(false));//非空闲时间也能运行；
+
+			pSettings->put_AllowHardTerminate(VARIANT_BOOL(false));//不允许使用terminateProcess来终止运行；
+
+			pSettings->put_MultipleInstances(TASK_INSTANCES_IGNORE_NEW);//如果一个定时任务在运行着，从新启动一个实例
+			pSettings->put_ExecutionTimeLimit(_bstr_t(L"PT0S"));
+			pSettings->Release();
+
+		}
+
+		////////////////////////////////////////////////////////////////////////////settings设置完毕
+
+		////////////////////////////////////////////////////////////////////////////////////设置触发器
+
+		// Set the idle settings for the task.
+		IIdleSettings *pIdleSettings = NULL;
+		hr = pSettings->get_IdleSettings(&pIdleSettings);
+		if (FAILED(hr))
+		{
+			printf("\nCannot get idle setting information: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		hr = pIdleSettings->put_WaitTimeout(L"PT5M");
+		pIdleSettings->Release();
+		if (FAILED(hr))
+		{
+			printf("\nCannot put idle setting information: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+
+		//  ------------------------------------------------------
+		//  Get the trigger collection to insert the time trigger.
+		ITriggerCollection *pTriggerCollection = NULL;
+		hr = pTaskDefinition->get_Triggers(&pTriggerCollection);
+		if (FAILED(hr))
+		{
+			printf("\nCannot get trigger collection: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		//  Add the time trigger to the task.
+		ITrigger *pTrigger = NULL;
+		/*hr = pTriggerCollection->Create(TASK_TRIGGER_TIME, &pTrigger);
+	
+		if (FAILED(hr))
+		{
+			printf("\nCannot create trigger: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		ITimeTrigger *pTimeTrigger = NULL;
+		hr = pTrigger->QueryInterface(
+			IID_ITimeTrigger, (void**)&pTimeTrigger);
+		pTrigger->Release();
+		if (FAILED(hr))
+		{
+			printf("\nQueryInterface call failed for ITimeTrigger: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		hr = pTimeTrigger->put_Id(_bstr_t(L"Trigger1"));
+		if (FAILED(hr))
+			printf("\nCannot put trigger ID: %x", hr);
+
+		//hr = pTimeTrigger->put_EndBoundary(_bstr_t(L"2015-05-02T08:00:00"));
+		//if (FAILED(hr))
+			//printf("\nCannot put end boundary on trigger: %x", hr);
+
+		//  Set the task to start at a certain time. The time 
+		//  format should be YYYY-MM-DDTHH:MM:SS(+-)(timezone).
+		//  For example, the start boundary below
+		//  is January 1st 2005 at 12:05
+		hr = pTimeTrigger->put_StartBoundary(_bstr_t(L"2011-01-01T12:05:00"));
+		pTimeTrigger->Release();
+		if (FAILED(hr))
+		{
+			printf("\nCannot add start boundary to trigger: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}*/
+		pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger);
+		ILogonTrigger *pLogonTrigger = NULL;
+		hr = pTrigger->QueryInterface(
+			IID_ILogonTrigger, (void**)&pLogonTrigger);
+		pLogonTrigger->put_Id(_bstr_t(L"111"));
+		pLogonTrigger->put_Delay(_bstr_t(L"PT30S"));
+		pTrigger->Release();
+		pTriggerCollection->Release();
+		//  ------------------------------------------------------
+		//  Add an action to the task. This task will execute notepad.exe.     
+		IActionCollection *pActionCollection = NULL;
+
+		//  Get the task action collection pointer.
+		hr = pTaskDefinition->get_Actions(&pActionCollection);
+		if (FAILED(hr))
+		{
+			printf("\nCannot get Task collection pointer: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		//  Create the action, specifying that it is an executable action.
+		IAction *pAction = NULL;
+		hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
+		pActionCollection->Release();
+		if (FAILED(hr))
+		{
+			printf("\nCannot create the action: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		IExecAction *pExecAction = NULL;
+		//  QI for the executable task pointer.
+		hr = pAction->QueryInterface(
+			IID_IExecAction, (void**)&pExecAction);
+		pAction->Release();
+		if (FAILED(hr))
+		{
+			printf("\nQueryInterface call failed for IExecAction: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		//  Set the path of the executable to notepad.exe.
+		hr = pExecAction->put_Path(_bstr_t(ExePath));
+		pExecAction->Release();
+		if (FAILED(hr))
+		{
+			printf("\nCannot put action path: %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		//  ------------------------------------------------------
+		//  Save the task in the root folder.
+		IRegisteredTask *pRegisteredTask = NULL;
+		hr = pRootFolder->RegisterTaskDefinition(
+			_bstr_t(strTaskName),
+			pTaskDefinition,
+			TASK_CREATE_OR_UPDATE,
+			_variant_t(),
+			_variant_t(),
+			TASK_LOGON_INTERACTIVE_TOKEN,
+			_variant_t(L""),
+			&pRegisteredTask);
+		if (FAILED(hr))
+		{
+			printf("\nError saving the Task : %x", hr);
+			pRootFolder->Release();
+			pTaskDefinition->Release();
+			CoUninitialize();
+			return 1;
+		}
+
+		printf("\n Success! Task successfully registered. ");
+
+		//  Clean up.
+		pRootFolder->Release();
+		pTaskDefinition->Release();
+		pRegisteredTask->Release();
+		CoUninitialize();
+		return 0;
+
+	}
